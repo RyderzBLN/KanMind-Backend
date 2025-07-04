@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
+
 
 from .serializers import RegistrationSerializer
 
@@ -27,3 +29,11 @@ class RegistrationView(APIView):
 
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+from rest_framework.permissions import IsAuthenticated
+
+class MyPrivateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({'data': 'Hello, authenticated user!'})
