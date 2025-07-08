@@ -1,12 +1,13 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 
 
-class User(models.Model):
-    username = models.CharField(max_length=150, unique=True)
+class KanbanUser(AbstractUser):
+    fullname = models.CharField(max_length=150, unique=False)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)
+   
 
     def __str__(self):
         return self.username
@@ -14,4 +15,3 @@ class User(models.Model):
     class Meta:
         verbose_name = 'User'
         verbose_name_plural = 'Users'
-        ordering = ['username']  # Default ordering by username

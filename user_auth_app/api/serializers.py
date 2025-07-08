@@ -4,12 +4,14 @@ from rest_framework import serializers
 User = get_user_model()
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    fullname = serializers.CharField()
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
     repeated_password = serializers.CharField(write_only=True)
-    email = serializers.EmailField(required=True)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'repeated_password']
+        fields = ['fullname', 'email', 'password', 'repeated_password']
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -27,8 +29,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'Passwords don’t match'})
 
         account = User(
-            email=self.validated_data['email'],
-            username=self.validated_data['username']
+            username=self.validated_data['email'],
+            fullname=self.validated_data['fullname'],
+            email=self.validated_data['email']
         )
         account.set_password(pw)
         account.save()

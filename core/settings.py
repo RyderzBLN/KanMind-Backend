@@ -130,3 +130,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",  # Dein Frontend läuft hier
 ]
+
+AUTH_USER_MODEL = 'user_auth_app.KanbanUser'
