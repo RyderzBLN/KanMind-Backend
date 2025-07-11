@@ -36,3 +36,17 @@ class RegistrationSerializer(serializers.ModelSerializer):
         account.set_password(pw)
         account.save()
         return account
+    
+
+
+
+
+
+    
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    username = email
+    password = serializers.CharField(write_only=True)
+
+    class Meta: 
+        fields = ['email', 'password']

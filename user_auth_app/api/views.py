@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
-
-
-
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import authenticate
 from .serializers import RegistrationSerializer
+from .serializers import LoginSerializer
+from django.contrib.auth import get_user_model
 
 
 class RegistrationView(APIView):
@@ -34,10 +35,35 @@ class RegistrationView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-from rest_framework.permissions import IsAuthenticated
 
-class MyPrivateView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        return Response({'data': 'Hello, authenticated user!'})
+
+
+class CustomLoginView(APIView):
+    serializer = LoginSerializer() 
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        if serializer.is_valid():
+            email = request.data.get('email')
+            password = request.data.get('password')
+
+
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'Ungültige Login-Daten'}, status=401)
+
+        if not user.check_password(password):
+            return Response({'error': 'Ungültige Login-Daten'}, status=401)
+
+        # Token erstellen oder holen
+        token, created = Token.objects.get_or_create(user=user)
+
+        return Response({
+            'token': token.key,
+            'fullname': getattr(user, 'fullname', ''),
+            'email': user.email,
+            'user_id': user.id
+        }, status=200)
