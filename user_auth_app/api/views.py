@@ -40,30 +40,33 @@ class RegistrationView(APIView):
 
 
 class CustomLoginView(APIView):
-    serializer = LoginSerializer() 
     permission_classes = [AllowAny]
 
     def post(self, request):
-        if serializer.is_valid():
-            email = request.data.get('email')
-            password = request.data.get('password')
+        serializer = LoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # 👉 Validierungsfehler korrekt handhaben
 
+        email = serializer.validated_data['email']
+        password = serializer.validated_data['password']
 
-        User = get_user_model()
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({'error': 'Ungültige Login-Daten'}, status=401)
+        # Verwenden Sie authenticate() mit dem USERNAME_FIELD (email)
+        user = authenticate(
+            request, 
+            email=email,  # 👉 Direkt 'email' übergeben
+            password=password
+        )
 
-        if not user.check_password(password):
-            return Response({'error': 'Ungültige Login-Daten'}, status=401)
+        if not user:
+            return Response(
+                {'error': 'Ungültige Login-Daten'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
-        # Token erstellen oder holen
-        token, created = Token.objects.get_or_create(user=user)
-
+        token, _ = Token.objects.get_or_create(user=user)
         return Response({
             'token': token.key,
-            'fullname': getattr(user, 'fullname', ''),
+            'fullname': user.fullname,
             'email': user.email,
             'user_id': user.id
-        }, status=200)
+        }, status=status.HTTP_200_OK)
