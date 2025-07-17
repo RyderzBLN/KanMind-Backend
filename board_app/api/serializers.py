@@ -11,7 +11,7 @@ class BoardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Board
-        fields = ['id', 'title', 'owner_id', 'member_count', 'ticket_count', "tasks_high_prio_count", "tasks_to_do_count"]
+        fields = ['id', 'title',  'member_count', 'ticket_count', "tasks_high_prio_count", "tasks_to_do_count" , 'owner_id']
 
     def get_member_count(self, obj):
         return obj.members.count()

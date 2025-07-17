@@ -11,7 +11,7 @@ class BoardViews(APIView):
     serializer_class = BoardSerializer
 
     def get(self, request):
-        boards = Board.objects.all()  # oder .filter(owner=request.user)
+        boards = Board.objects.all()   #filter(owner=request.user) 
         serializer = BoardSerializer(boards, many=True)
         print(boards)
         return Response(serializer.data)
