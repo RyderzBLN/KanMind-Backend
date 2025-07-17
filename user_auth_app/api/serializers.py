@@ -12,9 +12,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['fullname', 'email', 'password', 'repeated_password']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
+        
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
@@ -27,11 +25,13 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         if pw != repeated_pw:
             raise serializers.ValidationError({'error': 'Passwords don’t match'})
+        
+
 
         account = User(
-            username=self.validated_data['email'],
-            fullname=self.validated_data['fullname'],
-            email=self.validated_data['email']
+          email=self.validated_data['email'],
+          fullname=self.validated_data['fullname'],
+          username=self.validated_data['email']  # ❗ Muss gesetzt sein!
         )
         account.set_password(pw)
         account.save()

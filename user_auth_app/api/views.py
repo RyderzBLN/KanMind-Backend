@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 
 class RegistrationView(APIView):
     permission_classes = [AllowAny] 
+    
 
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
@@ -19,7 +20,7 @@ class RegistrationView(APIView):
         if serializer.is_valid():
             
             saved_account = serializer.save() 
-            print(saved_account)
+            
             token, created = Token.objects.get_or_create(user=saved_account)  
 
 
@@ -30,6 +31,7 @@ class RegistrationView(APIView):
                 'user_id': saved_account.id
 
             }
+            print(saved_account)
             return Response(data, status=status.HTTP_201_CREATED)
 
 
