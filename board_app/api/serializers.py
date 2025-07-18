@@ -1,5 +1,10 @@
 from rest_framework import serializers
 from ..models import Board
+from rest_framework import status
+from django.contrib.auth import get_user_model
+from rest_framework.response import Response
+
+
 
 
 class BoardSerializer(serializers.ModelSerializer):
@@ -24,3 +29,36 @@ class BoardSerializer(serializers.ModelSerializer):
     
     def get_tasks_high_prio_count(self, obj):
         return obj.tickets.filter(priority='high').count()
+    
+
+    def post(self, request):
+        user = request.user
+        data = request.data
+        
+        title = data.get('title')
+        members_ids = data.get('members', [])
+
+        if not title:
+            return Response({"error": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        board = Board.objects.create(title=title, owner=user)
+        
+
+
+        User = get_user_model()
+        
+
+        valid_members = User.objects.filter(id__in=members_ids)
+        
+
+        if user not in valid_members:
+            board.members.add(user)
+        
+
+        board.members.add(*valid_members)
+
+        board.save()
+        
+        serializer = BoardSerializer(board)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
