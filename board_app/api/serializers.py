@@ -16,7 +16,7 @@ class BoardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Board
-        fields = ['id', 'title',  'member_count', 'ticket_count', "tasks_high_prio_count", "tasks_to_do_count" , 'owner_id']
+        fields = ['id', 'title',  'member_count', 'ticket_count',  "tasks_to_do_count" , "tasks_high_prio_count", 'owner_id']
 
     def get_member_count(self, obj):
         return obj.members.count()
@@ -31,34 +31,3 @@ class BoardSerializer(serializers.ModelSerializer):
         return obj.tickets.filter(priority='high').count()
     
 
-    def post(self, request):
-        user = request.user
-        data = request.data
-        
-        title = data.get('title')
-        members_ids = data.get('members', [])
-
-        if not title:
-            return Response({"error": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-
-        board = Board.objects.create(title=title, owner=user)
-        
-
-
-        User = get_user_model()
-        
-
-        valid_members = User.objects.filter(id__in=members_ids)
-        
-
-        if user not in valid_members:
-            board.members.add(user)
-        
-
-        board.members.add(*valid_members)
-
-        board.save()
-        
-        serializer = BoardSerializer(board)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
