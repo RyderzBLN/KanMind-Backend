@@ -2,7 +2,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Q
-from .serializers import BoardSerializer
+from .serializers import BoardSerializer, BoardDetailSerializer
+from rest_framework.generics import RetrieveAPIView
 from ..models import Board as Board
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
@@ -48,7 +49,10 @@ class BoardViews(APIView):
 
 
 
-
+class BoardDetailView(RetrieveAPIView):
+    queryset = Board.objects.all().prefetch_related('members', 'tickets')
+    serializer_class = BoardDetailSerializer
+    permission_classes = [IsAuthenticated]  # Nur eingeloggt erlaubt
 
 
 
