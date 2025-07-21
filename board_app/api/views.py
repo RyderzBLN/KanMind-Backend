@@ -2,12 +2,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Q
-<<<<<<< HEAD
+
 from .serializers import BoardSerializer, BoardDetailSerializer, BoardMembersUpdateSerializer, BoardUpdateSerializer
 from rest_framework.generics import RetrieveAPIView
-=======
-from .serializers import BoardSerializer
->>>>>>> parent of 57cd40b (add GET /api/boards/{board_id}/)
+
+
 from ..models import Board as Board
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
@@ -92,13 +91,13 @@ class BoardUpdateView(UpdateAPIView):
 
 
 
-<<<<<<< HEAD
+
 class BoardDetailView(RetrieveUpdateAPIView):
     queryset = Board.objects.all().prefetch_related('members', 'tickets')
     serializer_class = BoardDetailSerializer
     permission_classes = [IsAuthenticated]  # Nur eingeloggt erlaubt
-=======
->>>>>>> parent of 57cd40b (add GET /api/boards/{board_id}/)
+
+
 
 
 class BoardMembersUpdateView(UpdateAPIView):

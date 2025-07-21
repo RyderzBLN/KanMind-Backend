@@ -6,7 +6,6 @@ from rest_framework.response import Response
 
 
 
-<<<<<<< HEAD
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
@@ -24,8 +23,6 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 
-=======
->>>>>>> parent of 57cd40b (add GET /api/boards/{board_id}/)
 
 class BoardSerializer(serializers.ModelSerializer):
     member_count = serializers.SerializerMethodField()
@@ -51,7 +48,6 @@ class BoardSerializer(serializers.ModelSerializer):
         return obj.tickets.filter(priority='high').count()
     
 
-<<<<<<< HEAD
 
 class BoardDetailSerializer(serializers.ModelSerializer):
     owner_data = UserSerializer(source='owner', read_only=True)
@@ -149,5 +145,3 @@ class BoardDetailResponseSerializer(serializers.ModelSerializer):
         model = Board
         fields = ['id', 'title', 'owner_data', 'members_data']
         read_only_fields = fields  # Alle Felder sind read-only
-=======
->>>>>>> parent of 57cd40b (add GET /api/boards/{board_id}/)
