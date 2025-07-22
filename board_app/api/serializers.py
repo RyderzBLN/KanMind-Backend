@@ -65,6 +65,17 @@ class BoardDetailSerializer(serializers.ModelSerializer):
         tickets = obj.tickets.all().select_related('assignee', 'reviewer')
         return TaskDetailSerializer(tickets, many=True).data
     
+    def delete(self, request, pk):
+        board = self.get_object()
+        if board.owner != request.user:
+            return Response(
+                {"detail": "You do not have permission to delete this board."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        else:
+            board.delete()
+        
+    
 
 class BoardPatchSerializer(serializers.ModelSerializer):
     owner_data = UserSerializer(source='owner', read_only=True)

@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Q
 from .serializers import BoardSerializer, BoardDetailSerializer, BoardPatchSerializer
-from rest_framework.generics import RetrieveAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import RetrieveAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView
 from ..models import Board as Board
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
@@ -49,7 +49,7 @@ class BoardViews(APIView):
 
 
 
-class BoardDetailView(RetrieveUpdateAPIView):
+class BoardDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Board.objects.all().prefetch_related('members', 'tickets')
     permission_classes = [IsAuthenticated]  # Nur eingeloggt erlaubt
 
@@ -82,6 +82,17 @@ class BoardDetailView(RetrieveUpdateAPIView):
             )
     def post(self, request, pk):
         return self.update(request, pk)
+    
+    def delete(self, request, pk):
+        board = self.get_object()
+        if board.owner != request.user:
+            return Response(
+                {"detail": "You do not have permission to delete this board."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        else:
+            board.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_update(self, serializer):
         user = self.request.user
@@ -102,6 +113,8 @@ class BoardDetailView(RetrieveUpdateAPIView):
                 board.members.add(user)  # Owner bleibt immer Mitglied
         
         serializer.save()
+
+        
 
 
 
