@@ -10,12 +10,12 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 
 class BoardViews(APIView):
-    permission_classes = [IsAuthenticated]  # Nur eingeloggt erlaubt
+    permission_classes = [IsAuthenticated]  
     serializer_class = BoardSerializer
 
     def get(self, request):
         user = request.user
-        # Boards filtern: Entweder Eigentümer oder Mitglied
+
         boards = Board.objects.filter(Q(owner=user) | Q(members=user)).distinct()
         serializer = BoardSerializer(boards, many=True)
         return Response(serializer.data)
@@ -51,8 +51,7 @@ class BoardViews(APIView):
 
 class BoardDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Board.objects.all().prefetch_related('members', 'tickets')
-    permission_classes = [IsAuthenticated]  # Nur eingeloggt erlaubt
-
+    permission_classes = [IsAuthenticated]  
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return BoardDetailSerializer
@@ -61,17 +60,17 @@ class BoardDetailView(RetrieveUpdateDestroyAPIView):
     def get(self, request, pk):
         serializer_class = self.get_serializer_class()
         try:
-            # Hole das spezifische Board (nicht alle Boards des Users!)
+
             board = self.get_queryset().get(pk=pk)
             
-            # Berechtigung prüfen
+
             if board.owner != request.user and request.user not in board.members.all():
                 return Response(
                     {"error": "No permission to view this board."},
                     status=status.HTTP_403_FORBIDDEN
                 )
             
-            # Serialisiere mit BoardDetailSerializer (wie in get_serializer_class definiert)
+
             serializer = self.get_serializer(board)
             return Response(serializer.data)
             
@@ -88,7 +87,7 @@ class BoardDetailView(RetrieveUpdateDestroyAPIView):
         if board.owner != request.user:
             return Response(
                 {"detail": "You do not have permission to delete this board."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_401_UNAUTHORIZED
             )
         else:
             board.delete()
@@ -98,11 +97,11 @@ class BoardDetailView(RetrieveUpdateDestroyAPIView):
         user = self.request.user
         board = self.get_object()
         
-        # Berechtigung prüfen (nur Owner kann updaten)
+       
         if board.owner != user:
             raise PermissionDenied("Only the board owner can update this board.")
         
-        # Mitglieder-Update-Logik
+    
         members_ids = self.request.data.get('members')
         if members_ids is not None:
             User = get_user_model()
@@ -110,7 +109,7 @@ class BoardDetailView(RetrieveUpdateDestroyAPIView):
             board.members.clear()
             board.members.add(*valid_members)
             if user not in valid_members:
-                board.members.add(user)  # Owner bleibt immer Mitglied
+                board.members.add(user)  
         
         serializer.save()
 
