@@ -122,11 +122,18 @@ class AssignedTicketsView(APIView):
 
     def get(self, request):
         user = request.user
-        print("👤 Eingeloggter User:", user, "ID:", user.id)
-
         tickets = Ticket.objects.filter(assignee=user)
-        print("🧾 Gefundene Tickets:", list(tickets.values('id', 'title', 'assignee_id')))
+        serializer = TaskDetailSerializer(tickets, many=True)
+        return Response(serializer.data)
+    
+class RewieverView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TaskDetailSerializer
 
+
+    def get(self, request):
+        user = request.user
+        tickets = Ticket.objects.filter(reviewer=user)
         serializer = TaskDetailSerializer(tickets, many=True)
         return Response(serializer.data)
 
