@@ -6,5 +6,6 @@ urlpatterns = [
     path('boards/', BoardViews.as_view(), name='board-list'),
     path('boards/<int:pk>/', BoardDetailView.as_view(), name='board-detail'),
     path('tasks/', TaskCreateView.as_view(), name='reviewing-tasks'),
+    path('tasks/reviewing/', RewieverView.as_view(), name='reviewing-tasks'),
 
 ]

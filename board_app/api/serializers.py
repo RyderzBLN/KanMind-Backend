@@ -93,6 +93,7 @@ class BoardPatchSerializer(serializers.ModelSerializer):
     
 
 class TaskDetailSerializer(serializers.ModelSerializer):
+    board = serializers.PrimaryKeyRelatedField(queryset=Board.objects.all())
     assignee = UserSerializer(read_only=True)
     reviewer = UserSerializer(read_only=True)
     status = serializers.CharField(source='get_status_display')
@@ -103,6 +104,7 @@ class TaskDetailSerializer(serializers.ModelSerializer):
         model = Ticket
         fields = [
             'id', 
+            "board",
             'title', 
             'description', 
             'status', 
