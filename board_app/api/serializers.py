@@ -65,15 +65,7 @@ class BoardDetailSerializer(serializers.ModelSerializer):
         tickets = obj.tickets.all().select_related('assignee', 'reviewer')
         return TaskDetailSerializer(tickets, many=True).data
     
-    def delete(self, request, pk):
-        board = self.get_object()
-        if board.owner != request.user:
-            return Response(
-                {"detail": "You do not have permission to delete this board."},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        else:
-            board.delete()
+    
         
     
 
@@ -121,15 +113,4 @@ class TaskDetailSerializer(serializers.ModelSerializer):
             'comments_count'
         ]
 
-   # def create(self, validated_data):
-   #     members_data = validated_data.pop('members', [])
-   #     board = Board.objects.create(**validated_data)
-   #     for member_data in members_data:
-   #         user = get_user_model().objects.get(id=member_data['id'])
-   #         board.members.add(user)
-   #     return board
-  #
-  #  def update(self, instance, validated_data):
-  #      instance.title = validated_data.get('title', instance.title)
-  #      instance.save()
-  #      return instance
+

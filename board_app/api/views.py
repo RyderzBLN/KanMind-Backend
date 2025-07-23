@@ -137,3 +137,88 @@ class RewieverView(APIView):
         serializer = TaskDetailSerializer(tickets, many=True)
         return Response(serializer.data)
 
+
+
+class TaskCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        tickets = Ticket.objects.filter(reviewer=user)
+        serializer = TaskDetailSerializer(tickets, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        data = request.data
+        User = get_user_model()
+
+
+        board_id = data.get('board')
+        title = data.get('title')
+        description = data.get('description')
+        status_value = data.get('status')
+        priority_value = data.get('priority')
+        assignee_id = data.get('assignee_id')
+        reviewer_id = data.get('reviewer_id')
+        due_date = data.get('due_date')
+
+        if not board_id or not title or not status_value or not priority_value:
+            return Response({"error": "board, title, status, and priority are required."}, status=400)
+
+
+        try:
+            board = Board.objects.get(id=board_id)
+        except Board.DoesNotExist:
+            return Response({"error": "Board not found."}, status=404)
+
+        if request.user not in board.members.all() and request.user != board.owner:
+            return Response({"error": "You are not a member of this board."}, status=403)
+
+
+        VALID_STATUS = {
+            "to-do": "to_do",
+            "in-progress": "in_progress",
+            "review": "review",
+            "done": "done"
+        }
+
+        internal_status = VALID_STATUS.get(status_value)
+        if not internal_status:
+            return Response({"error": f"Invalid status '{status_value}'."}, status=400)
+
+
+        if priority_value not in ['low', 'medium', 'high']:
+            return Response({"error": f"Invalid priority '{priority_value}'."}, status=400)
+
+
+        assignee = reviewer = None
+        if assignee_id:
+            try:
+                assignee = User.objects.get(id=assignee_id)
+                if assignee not in board.members.all():
+                    return Response({"error": "Assignee must be a member of the board."}, status=403)
+            except User.DoesNotExist:
+                return Response({"error": "Assignee not found."}, status=404)
+
+        if reviewer_id:
+            try:
+                reviewer = User.objects.get(id=reviewer_id)
+                if reviewer not in board.members.all():
+                    return Response({"error": "Reviewer must be a member of the board."}, status=403)
+            except User.DoesNotExist:
+                return Response({"error": "Reviewer not found."}, status=404)
+
+
+        ticket = Ticket.objects.create(
+            board=board,
+            title=title,
+            description=description,
+            status=internal_status,
+            priority=priority_value,
+            assignee=assignee,
+            reviewer=reviewer,
+            due_date=due_date
+        )
+
+        serializer = TaskDetailSerializer(ticket)
+        return Response(serializer.data, status=201)
