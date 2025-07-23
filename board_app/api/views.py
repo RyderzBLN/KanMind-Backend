@@ -2,9 +2,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Q
-from .serializers import BoardSerializer, BoardDetailSerializer, BoardPatchSerializer
+from .serializers import BoardSerializer, BoardDetailSerializer, BoardPatchSerializer, TaskDetailSerializer
 from rest_framework.generics import RetrieveAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView
-from ..models import Board as Board
+from ..models import Board, Ticket
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from rest_framework import status
@@ -115,5 +115,18 @@ class BoardDetailView(RetrieveUpdateDestroyAPIView):
 
         
 
+class AssignedTicketsView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TaskDetailSerializer
 
+
+    def get(self, request):
+        user = request.user
+        print("👤 Eingeloggter User:", user, "ID:", user.id)
+
+        tickets = Ticket.objects.filter(assignee=user)
+        print("🧾 Gefundene Tickets:", list(tickets.values('id', 'title', 'assignee_id')))
+
+        serializer = TaskDetailSerializer(tickets, many=True)
+        return Response(serializer.data)
 

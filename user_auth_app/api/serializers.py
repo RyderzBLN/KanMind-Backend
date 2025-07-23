@@ -31,7 +31,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         account = User(
           email=self.validated_data['email'],
           fullname=self.validated_data['fullname'],
-          username=self.validated_data['email']  # ❗ Muss gesetzt sein!
+          username=self.validated_data['email']
         )
         account.set_password(pw)
         account.save()
@@ -48,12 +48,3 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
 
-class EmailCheckSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'email', 'fullname']
-
-    def validate_email(self, value):
-        if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Email does not exist.")
-        return value

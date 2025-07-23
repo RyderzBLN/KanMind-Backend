@@ -7,7 +7,6 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from .serializers import RegistrationSerializer
 from .serializers import LoginSerializer
-from .serializers import EmailCheckSerializer
 from django.contrib.auth import get_user_model
 
 
@@ -76,6 +75,8 @@ class CustomLoginView(APIView):
             'user_id': user.id
         }, status=status.HTTP_200_OK)
     
+
+
 class EmailCheckView(APIView):
     permission_classes = [IsAuthenticated]
 

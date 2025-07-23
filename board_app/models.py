@@ -33,9 +33,13 @@ class Ticket(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     status = models.CharField(
-        max_length=20,
-        choices=[('to_do', 'To Do'), ('done', 'Done')],
-    )
+    max_length=20,
+    choices=[
+        ('to_do', 'To Do'),
+        ('in_progress', 'In Progress'),
+        ('done', 'Done'),
+    ],
+)
     priority = models.CharField(
         max_length=10,
         choices=PRIORITY_CHOICES,
