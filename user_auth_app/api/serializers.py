@@ -38,10 +38,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return account
     
 
-
-
-
-
     
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()

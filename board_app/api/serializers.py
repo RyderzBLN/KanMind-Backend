@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Board, Ticket
+from ..models import Board, Ticket, Comment
 from rest_framework import status
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
@@ -116,3 +116,29 @@ class TaskDetailSerializer(serializers.ModelSerializer):
         ]
 
 
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Comment
+        fields = ['id', 'created_at', 'author', 'content']
+        read_only_fields = ['id', 'author', 'created_at']
+    
+    def get_author(self, obj):
+     
+        if hasattr(obj.author, 'fullname'):
+            return obj.author.fullname
+        return obj.author.email 
+
+
+class TaskCommentSerializer(serializers.ModelSerializer):
+    author = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'created_at', 'author', 'content']
+
+    def get_author(self, obj):
+
+        return obj.author.fullname
