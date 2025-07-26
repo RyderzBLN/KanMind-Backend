@@ -5,10 +5,18 @@ from django.db.models import Q
 from .serializers import BoardSerializer, BoardDetailSerializer, BoardPatchSerializer, TaskDetailSerializer, CommentSerializer, TaskCommentSerializer
 from rest_framework.generics import RetrieveAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView
 from ..models import Board, Ticket, Comment
-from rest_framework.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+
+from .services.board_service import  (
+    get_board_or_403,
+    delete_board_if_owner,
+    update_board_members,
+    create_board
+)
+from .services.ticket_service import get_assigned_tickets
 
 
 class BoardViews(APIView):
@@ -22,29 +30,12 @@ class BoardViews(APIView):
         serializer = BoardSerializer(boards, many=True)
         return Response(serializer.data)
     
-    
-
-
     def post(self, request):
-        user = request.user
-        data = request.data
-        
-        title = data.get('title')
-        members_ids = data.get('members', [])
+        try:
+            board = create_board(request.data, request.user)
+        except ValidationError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not title:
-            return Response({"error": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
-        board = Board.objects.create(title=title, owner=user)
-
-        
-        User = get_user_model()
-        valid_members = User.objects.filter(id__in=members_ids)
-
-        
-        if user not in valid_members:
-            board.members.add(user)
-        board.members.add(*valid_members)
-        board.save()       
         serializer = BoardSerializer(board)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -60,59 +51,27 @@ class BoardDetailView(RetrieveUpdateDestroyAPIView):
         return BoardPatchSerializer
 
     def get(self, request, pk):
-        serializer_class = self.get_serializer_class()
         try:
-
-            board = self.get_queryset().get(pk=pk)
-            
-
-            if board.owner != request.user and request.user not in board.members.all():
-                return Response(
-                    {"error": "No permission to view this board."},
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            
-
+            board = get_board_or_403(pk, request.user)
             serializer = self.get_serializer(board)
             return Response(serializer.data)
-            
-        except Board.DoesNotExist:
-            return Response(
-                {"error": "Board not found."}, 
-                status=status.HTTP_404_NOT_FOUND
-            )
+        except (ValidationError, PermissionDenied) as e:
+            return Response({"error": str(e)}, status=status.HTTP_403_FORBIDDEN)
+
     def post(self, request, pk):
         return self.update(request, pk)
-    
+
     def delete(self, request, pk):
         board = self.get_object()
-        if board.owner != request.user:
-            return Response(
-                {"detail": "You do not have permission to delete this board."},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        else:
-            board.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            delete_board_if_owner(board, request.user)
+        except PermissionDenied as e:
+            return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_update(self, serializer):
-        user = self.request.user
         board = self.get_object()
-        
-       
-        if board.owner != user:
-            raise PermissionDenied("Only the board owner can update this board.")
-        
-    
-        members_ids = self.request.data.get('members')
-        if members_ids is not None:
-            User = get_user_model()
-            valid_members = User.objects.filter(id__in=members_ids)
-            board.members.clear()
-            board.members.add(*valid_members)
-            if user not in valid_members:
-                board.members.add(user)  
-        
+        update_board_members(board, self.request.data.get("members"), self.request.user)
         serializer.save()
 
         
@@ -123,9 +82,8 @@ class AssignedTicketsView(APIView):
 
 
     def get(self, request):
-        user = request.user
-        tickets = Ticket.objects.filter(assignee=user)
-        serializer = TaskDetailSerializer(tickets, many=True)
+        tickets = get_assigned_tickets(request.user)
+        serializer = self.serializer_class(tickets, many=True)
         return Response(serializer.data)
     
 class RewieverView(APIView):
