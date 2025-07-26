@@ -73,7 +73,7 @@ class BoardPatchSerializer(serializers.ModelSerializer):
     owner_data = UserSerializer(source='owner', read_only=True)
     members_data = UserSerializer(source='members', many=True, read_only=True)
     
-    # Für die Eingabe (POST/PUT/PATCH): Mitglieder-IDs unter members
+
     members = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=get_user_model().objects.all(),
@@ -93,6 +93,7 @@ class BoardPatchSerializer(serializers.ModelSerializer):
     
 
 class TaskDetailSerializer(serializers.ModelSerializer):
+    created_by = serializers.StringRelatedField()
     board = serializers.PrimaryKeyRelatedField(queryset=Board.objects.all())
     assignee = UserSerializer(read_only=True)
     reviewer = UserSerializer(read_only=True)
@@ -112,7 +113,8 @@ class TaskDetailSerializer(serializers.ModelSerializer):
             'assignee', 
             'reviewer', 
             'due_date', 
-            'comments_count'
+            'comments_count',
+            "created_by"
         ]
 
 
