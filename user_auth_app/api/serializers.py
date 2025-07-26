@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 User = get_user_model()
 
+
 class RegistrationSerializer(serializers.ModelSerializer):
     fullname = serializers.CharField()
     email = serializers.EmailField()
@@ -13,7 +14,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ['fullname', 'email', 'password', 'repeated_password']
         
-
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError('Email already exists')
@@ -26,19 +26,17 @@ class RegistrationSerializer(serializers.ModelSerializer):
         if pw != repeated_pw:
             raise serializers.ValidationError({'error': 'Passwords don’t match'})
         
-
-
         account = User(
           email=self.validated_data['email'],
           fullname=self.validated_data['fullname'],
           username=self.validated_data['email']
         )
+
         account.set_password(pw)
         account.save()
         return account
     
 
-    
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)

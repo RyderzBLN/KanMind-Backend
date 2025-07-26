@@ -8,12 +8,14 @@ from django.contrib.auth import authenticate
 from .serializers import RegistrationSerializer
 from .serializers import LoginSerializer
 from django.contrib.auth import get_user_model
+
 from .services.auth_service import (
     register_user,
     login_user
 )
 
 User = get_user_model()
+
 
 class RegistrationView(APIView):
     permission_classes = [AllowAny]
@@ -45,7 +47,6 @@ class CustomLoginView(APIView):
 
         return Response(data, status=status.HTTP_200_OK)
     
-
 
 class EmailCheckView(APIView):
     permission_classes = [IsAuthenticated]

@@ -5,12 +5,11 @@ from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 
 
-
 class UserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = get_user_model()
         fields = ['id', 'email', "fullname"]
-
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -23,16 +22,12 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'status', 'priority', "assignee", "reviewer", 'due_date', 'comments_count']
 
 
-
-
 class BoardSerializer(serializers.ModelSerializer):
     member_count = serializers.SerializerMethodField()
     ticket_count = serializers.SerializerMethodField()
     tasks_to_do_count = serializers.SerializerMethodField()
     tasks_high_prio_count = serializers.SerializerMethodField()
     owner_id = serializers.IntegerField(source='owner.id')
-   # members = UserSerializer(many=True, read_only=True)
-   # tasks = TaskSerializer(many=True, read_only=True)
 
     class Meta:
         model = Board
@@ -65,15 +60,11 @@ class BoardDetailSerializer(serializers.ModelSerializer):
         tickets = obj.tickets.all().select_related('assignee', 'reviewer')
         return TaskDetailSerializer(tickets, many=True).data
     
-    
-        
-    
-
+           
 class BoardPatchSerializer(serializers.ModelSerializer):
     owner_data = UserSerializer(source='owner', read_only=True)
     members_data = UserSerializer(source='members', many=True, read_only=True)
     
-
     members = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=get_user_model().objects.all(),
@@ -81,8 +72,6 @@ class BoardPatchSerializer(serializers.ModelSerializer):
         required=False
     )
     
-   
-
     class Meta:
         model = Board
         fields = ['id', 'title', 'owner_data', 'members_data', 'members']
@@ -118,7 +107,6 @@ class TaskDetailSerializer(serializers.ModelSerializer):
         ]
 
 
-
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     
@@ -128,7 +116,7 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'author', 'created_at']
     
     def get_author(self, obj):
-     
+
         if hasattr(obj.author, 'fullname'):
             return obj.author.fullname
         return obj.author.email 
