@@ -5,8 +5,8 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 VALID_STATUS = {
-    "to-do": "to_do",
-    "in-progress": "in_progress",
+    "to-do": "to-do",
+    "in-progress": "in-progress",
     "review": "review",
     "done": "done"
 }

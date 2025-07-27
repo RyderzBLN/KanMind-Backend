@@ -35,8 +35,9 @@ class Ticket(models.Model):
     max_length=20,
 
     choices=[
-        ('to_do', 'to Do'),
-        ('in_progress', 'in Progress'),
+        ('to-do', 'to-do'),
+        ('in-progress', 'in-progress'),
+        ('review', 'review'),
         ('done', 'done'),
     ],
 )
