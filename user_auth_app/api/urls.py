@@ -7,3 +7,4 @@ urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
     path('email-check/', EmailCheckView.as_view(), name='email-check')
 ]
+#
